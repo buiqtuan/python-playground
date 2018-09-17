@@ -25,4 +25,13 @@ tinydict = {'name': 'john','code':6734, 'dept': 'sales'}
 # for key in dictionary:
 #     print("%s --> %s" %(key, dictionary[key]))
 
-print(int('123123123111111111') + 1)
+# for x in range(1,8,3) :
+# 	print(x)
+
+# for ind,val in enumerate(tinyTuple,start = 0) :
+# 	print('{} and {}'.format(ind,val))
+
+# def printingLocalTime() :
+# 	print(time.localtime(time.time())[0])
+
+# print(int('123123123111111111') + 1)

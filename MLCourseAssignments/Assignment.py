@@ -21,8 +21,8 @@ alpha = .01
 
 print(trainingSet)
 
-# plt.plot(x, y, 'ro')
-# plt.axis([0, 25, -20, 20])
-# plt.ylabel('Revenues')
-# plt.xlabel('Populations')
-# plt.show()
+plt.plot(trainingSet[1], outcomeSet[0], 'ro')
+plt.axis([0, 25, -20, 20])
+plt.ylabel('Revenues')
+plt.xlabel('Populations')
+plt.show()
