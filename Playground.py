@@ -35,3 +35,5 @@ tinydict = {'name': 'john','code':6734, 'dept': 'sales'}
 # 	print(time.localtime(time.time())[0])
 
 # print(int('123123123111111111') + 1)
+
+print(float('-2'))
