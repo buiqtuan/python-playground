@@ -1,10 +1,12 @@
-x = [1,2,3,4,5,6,7,8,9]
+import numpy
+
+# x = [1,2,3,4,5,6,7,8,9]
 
 
 
-tinyTuple = ('a',1,1,'b')
+# tinyTuple = ('a',1,1,'b')
 
-tinydict = {'name': 'john','code':6734, 'dept': 'sales'}
+# tinydict = {'name': 'john','code':6734, 'dept': 'sales'}
 
 
 # for ind, val in enumerate(x,start=0) :
@@ -36,4 +38,7 @@ tinydict = {'name': 'john','code':6734, 'dept': 'sales'}
 
 # print(int('123123123111111111') + 1)
 
-print(float('-2'))
+a = [1,2]
+b = [2,3]
+
+print(max(a) - min(b))
