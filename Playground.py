@@ -38,7 +38,23 @@ import numpy
 
 # print(int('123123123111111111') + 1)
 
-a = [[1,2]]
-b = [2,3]
+def decorator_func(say_hello_func):
+	def wrapper_func(hello_war, world_war):
+		hello = 'hello'
+		world = 'world'
 
-print(numpy.transpose(a))
+		if not hello_war:
+			hello_war = hello
+
+		if not world_war:
+			world_war = world
+		
+		return say_hello_func(hello_war, world_war)
+	
+	return wrapper_func
+
+@decorator_func
+def say_hello(hello_war, world_war):
+	print(hello_war + " " + world_war)
+
+say_hello(None, None)
