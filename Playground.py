@@ -38,7 +38,7 @@ import numpy
 
 # print(int('123123123111111111') + 1)
 
-a = [1,2]
+a = [[1,2]]
 b = [2,3]
 
-print(max(a) - min(b))
+print(numpy.transpose(a))

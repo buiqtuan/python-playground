@@ -62,7 +62,7 @@ def calculateTheta2():
 	trainingSet = [[1 for k in range(len(dataArray))],
 				  [((float(data.split(',')[0]) - avarageInput)/rangeInput) for data in dataArray], 
 				  [float(data.split(',')[1]) for data in dataArray]] #size and no of bedrooms
-	outcomeSet = [float(data.split(',')[2]) for data in dataArray] #prices
+	outcomeSet = [float(data.split(',')[2]) / 1000000 for data in dataArray] #prices
 	
 	theta = [0,0,0]
 	costValue = 0
@@ -73,25 +73,23 @@ def calculateTheta2():
 		temp = [0,0,0]
 		sumTheta = [0,0,0]
 
-		tempArray = calculateUnitTheta(theta, trainingSet)
-
 		for i in range(len(sumTheta)):
 			for j in range(m):
-				sumTheta[i] = sumTheta[i] + (tempArray[0][j] - outcomeSet[j])*trainingSet[i][j]
-
+				sumTheta[i] = sumTheta[i] + (calculateUnitTheta(theta,[trainingSet[0][j],trainingSet[1][j],trainingSet[2][j]]) - outcomeSet[j])*trainingSet[i][j]
+				
 			temp[i] = theta[i] - (alpha/m)*sumTheta[i]
-
-		theta = temp
 
 		for i in range(m):
 			costValue = costValue + (theta[0]*trainingSet[0][i] + theta[1]*trainingSet[1][i] + theta[2]*trainingSet[2][i] - outcomeSet[i])**2
+
+		theta = temp
 
 		iterations = iterations - 1
 
 	return (theta, costValue/(2*m))
 		
 def calculateUnitTheta(_theta,_X):
-	return numpy.dot([_theta], _X)
+	return numpy.dot(_theta, numpy.transpose(_X))
 	
 
 print(calculateTheta2())
