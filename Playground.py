@@ -1,4 +1,4 @@
-import numpy
+import numpy as np
 
 # x = [1,2,3,4,5,6,7,8,9]
 
@@ -38,23 +38,32 @@ import numpy
 
 # print(int('123123123111111111') + 1)
 
-def decorator_func(say_hello_func):
-	def wrapper_func(hello_war, world_war):
-		hello = 'hello'
-		world = 'world'
+# test decorator
+# def decorator_func(say_hello_func):
+# 	def wrapper_func(hello_war, world_war):
+# 		hello = 'hello'
+# 		world = 'world'
 
-		if not hello_war:
-			hello_war = hello
+# 		if not hello_war:
+# 			hello_war = hello
 
-		if not world_war:
-			world_war = world
+# 		if not world_war:
+# 			world_war = world
 		
-		return say_hello_func(hello_war, world_war)
+# 		return say_hello_func(hello_war, world_war)
 	
-	return wrapper_func
+# 	return wrapper_func
 
-@decorator_func
-def say_hello(hello_war, world_war):
-	print(hello_war + " " + world_war)
+# @decorator_func
+# def say_hello(hello_war, world_war):
+# 	print(hello_war + " " + world_war)
 
-say_hello(None, None)
+# say_hello(None, None)
+
+y = np.array([ 1,2])
+
+X = np.array([[1,2]]).T
+
+X = y
+
+print(X)
