@@ -60,10 +60,15 @@ import numpy as np
 
 # say_hello(None, None)
 
-y = np.array([ 1,2])
+y = [0,2,1,4,6,8,4,-1]
+x = np.array([[2],[1],[3]])
 
-X = np.array([[1,2]]).T
+print(y[1:])
 
-X = y
+print(y[:3])
 
-print(X)
+print(y[:-1])
+
+print(y[-1:])
+
+print(x[:,0])

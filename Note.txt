@@ -1,0 +1,9 @@
+Install numpy and scipy manually:
+
+Download numpy and scipy from this link: https://www.lfd.uci.edu/~gohlke/pythonlibs/#numpy
+
+- Numpy: numpy-1.15.1+mkl-cp37-cp37m-win32.whl 
+
+- Scipy: scipy-1.1.0-cp37-cp37m-win32.whl
+
+If these packages were installed before, remove it before reinstall (pip uninstall <package-name>)
