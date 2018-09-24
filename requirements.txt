@@ -1,7 +1,9 @@
 matplotlib
 scikit-learn
 scipy
-pandas
 tflearn
 protobuf
 tensorflow
+numpy-mkl
+h5py
+curses

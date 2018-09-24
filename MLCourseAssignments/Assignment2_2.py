@@ -2,7 +2,6 @@ from __future__ import print_function
 
 import matplotlib.pyplot as plt
 import numpy as np
-import pandas as pandas
 from Assignment2 import computeCost
 from scipy import optimize
 

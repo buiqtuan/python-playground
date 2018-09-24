@@ -4,6 +4,6 @@ Install numpy and scipy manually:
 
 Download required packages from this link: https://www.lfd.uci.edu/~gohlke/pythonlibs/#numpy
 
-- Tensorflow: tensorflow-1.9.0-cp37-cp37m-win_amd64.whl
+- Tensorflow: tensorflow-1.9.0-cp37-cp37m-win_amd64.whl (Install with numpy-mkl, h5py, curses)
 
 If these packages were installed before, remove it before reinstall (pip uninstall <package-name>)
