@@ -5,7 +5,7 @@ import numpy as np
 import pandas as pandas
 from scipy import optimize
 
-datafile = 'D:\workspace\sideprojects\python-playground\MLCourseAssignments\DataAssigment2\ex2data1.txt'
+datafile = './DataAssigment2/ex2data1.txt'
 #!head $datafile
 cols = np.loadtxt(datafile,delimiter=',',usecols=(0,1,2),unpack=True) #Read in comma separated data
 #Form the usual "X" matrix and "y" vector

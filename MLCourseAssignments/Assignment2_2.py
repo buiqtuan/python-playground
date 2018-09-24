@@ -6,7 +6,7 @@ import pandas as pandas
 from Assignment2 import computeCost
 from scipy import optimize
 
-datafile = 'D:\workspace\sideprojects\python-playground\MLCourseAssignments\DataAssigment2\ex2data2.txt'
+datafile = './DataAssigment2/ex2data2.txt'
 #!head $datafile
 cols = np.loadtxt(datafile,delimiter=',',usecols=(0,1,2),unpack=True) #Read in comma separated data
 ##Form the usual "X" matrix and "y" vector
@@ -31,7 +31,6 @@ def plotData():
     plt.legend()
     plt.grid(True)
 
-# (the OCTAVE equivalent was provided in the HW)
 def mapFeature( x1col, x2col ):
     """ 
     Function that takes in a column of n- x1's, a column of n- x2s, and builds
@@ -65,6 +64,7 @@ def plotBoundary(mytheta, myX, myy, mylambda=0.):
     It works by making a grid of x1 ("xvals") and x2 ("yvals") points,
     And for each, computing whether the hypothesis classifies that point as
     True or False. Then, a contour is drawn with a built-in pyplot function.
+    
     """
     
     theta, mincost = optimizeRegularizedTheta(mytheta,myX,myy,mylambda)
