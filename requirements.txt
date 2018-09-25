@@ -2,8 +2,10 @@ matplotlib
 scikit-learn
 scipy
 tflearn
+pandas
 protobuf
 tensorflow
 numpy-mkl
 h5py
 curses
+nltk

@@ -74,7 +74,8 @@ model.fit(X, Y,
 			validation_set=(X_test, Y_test), 
 			show_metric=True, 
 			batch_size=96, 
-			snapshot_epoch=True, run_id='BirdDetector')
+			snapshot_epoch=True, 
+			run_id='BirdDetector')
 
 # Save model when training is complete to a file
 model.save("BirdDetector.tfl")

@@ -60,15 +60,19 @@ import numpy as np
 
 # say_hello(None, None)
 
-y = [0,2,1,4,6,8,4,-1]
-x = np.array([[2],[1],[3]])
+# y = [0,2,1,4,6,8,4,-1]
+# x = np.array([[2],[1],[3]])
 
-print(y[1:])
+# print(y[1:])
 
-print(y[:3])
+# print(y[:3])
 
-print(y[:-1])
+# print(y[:-1])
 
-print(y[-1:])
+# print(y[-1:])
 
-print(x[:,0])
+# print(x[:,0])
+
+x = np.linspace(-1,1.5,50)
+
+print(np.meshgrid(x))
