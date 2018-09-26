@@ -1,6 +1,9 @@
 import nltk
+import re
+import heapq
 
 from nltk import PorterStemmer, WordNetLemmatizer
+from nltk.corpus import stopwords
 
 try:
 	nltk.data.find('tokenizers/punkt')
@@ -21,17 +24,57 @@ paragraph = """
 
 sentences = nltk.sent_tokenize(paragraph)
 
-lemmatizer = WordNetLemmatizer()
-stemmer = PorterStemmer()
-
 for i in range(len(sentences)):
-	words = nltk.word_tokenize(sentences[i])
-	new_words = [lemmatizer.lemmatize(word) for word in words]
-	sentences[i] = ' '.join(new_words)
+	sentences[i] = sentences[i].lower()
+	sentences[i] = re.sub(r'\W',' ', sentences[i]) # remove all non-word symbols like . , ; / ...
+	sentences[i] = re.sub(r'\s+',' ', sentences[i]) # replace any spaces between words with one space
+	sentences[i] = sentences[i].strip() # Trim all the spaces at the begin and the end of each sentence
 
-print(sentences)
+# Creating the histogram
+word2count = {}
 
-for i in range(len(sentences)):
-	words = nltk.word_tokenize(sentences[i])
-	new_words = [stemmer.stem(word) for word in words]
-	sentences[i] = ' '.join(new_words)
+for s in sentences:
+	words = nltk.word_tokenize(s)
+	for word in words:
+		if word not in word2count.keys():
+			word2count[word] = 1
+		else:
+			word2count[word] += 1
+
+freq_words = heapq.nlargest(100,word2count,key=word2count.get)
+
+print(freq_words) 
+
+# Finding name entities
+# words = nltk.word_tokenize(paragraph)
+# tagged_words = nltk.pos_tag(words)
+
+# nameEntities = nltk.ne_chunk(tagged_words)
+# nameEntities.draw()
+
+# Finding tagged words
+# words = nltk.word_tokenize(paragraph)
+# tagged_words = nltk.pos_tag(words)
+# word_tag = []
+# for tw in tagged_words:
+# 	word_tag.append(tw[0] + "_" + tw[1])
+
+# Fiding stop words
+# for i in range(len(sentences)):
+# 	words = nltk.word_tokenize(sentences[i])
+# 	new_words = [word for word in words if word not in stopwords.words('english')]
+# 	sentences[i] = ' '.join(new_words)
+
+# Lemmatize
+# lemmatizer = WordNetLemmatizer()
+# for i in range(len(sentences)):
+# 	words = nltk.word_tokenize(sentences[i])
+# 	new_words = [lemmatizer.lemmatize(word) for word in words]
+# 	sentences[i] = ' '.join(new_words)
+
+# Stem
+# stemmer = PorterStemmer()
+# for i in range(len(sentences)):
+# 	words = nltk.word_tokenize(sentences[i])
+# 	new_words = [stemmer.stem(word) for word in words]
+# 	sentences[i] = ' '.join(new_words)
