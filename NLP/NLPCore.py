@@ -1,7 +1,7 @@
 import nltk
 import re
 import heapq
-
+import numpy as np
 from nltk import PorterStemmer, WordNetLemmatizer
 from nltk.corpus import stopwords
 
@@ -43,7 +43,40 @@ for s in sentences:
 
 freq_words = heapq.nlargest(100,word2count,key=word2count.get)
 
-print(freq_words) 
+# IDF Matrix
+word_idfs = {}
+
+for word in freq_words:
+	doc_count = 0
+	for s in sentences:
+		if word in nltk.word_tokenize(s):
+			doc_count += 1
+
+	word_idfs[word] = np.log((len(sentences) / doc_count) + 1)
+
+# TF Matrx
+tf_matrix = {}
+
+for word in freq_words:
+	doc_tf = []
+	for s in sentences:
+		frequency = 0
+		for w in nltk.word_tokenize(s):
+			if w == word:
+				frequency += 1
+		
+		tf_word = frequency / len(nltk.word_tokenize(paragraph))
+		doc_tf.append(tf_word)
+	tf_matrix[word] = doc_tf
+
+# TF-IDF calculation
+tfidf_matrix = []
+for word in tf_matrix.keys():
+	tfidf = []
+	for value in tf_matrix[word]:
+		score = value * word_idfs[word]
+		tfidf.append(score)
+	tfidf_matrix.append(tfidf)
 
 # Finding name entities
 # words = nltk.word_tokenize(paragraph)
