@@ -77,10 +77,15 @@ import numpy as np
 
 # print(np.meshgrid(x))
 
-A = np.array([[1,2,3],[4,5,6]])
-B = np.zeros(A.shape)
+# A = np.array([[1,2,3],[4,5,6]])
+# B = np.zeros(A.shape)
 
-B[0:,0:] = A
+# B[0:,0:] = A
 
-print(A)
-print(B)
+# print(A)
+# print(B)
+# None, False, '' and 0 equal to False
+
+a = [0]*2
+
+print(a)
