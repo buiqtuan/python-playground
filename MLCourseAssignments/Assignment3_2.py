@@ -17,12 +17,9 @@ filePath = './DataAssignment3/ex3data1.mat'
 gettrace = getattr(sys, 'gettrace', None)
 
 if gettrace():
-	print('In Debug Mode!')
-	filePath = 'D:\workspace\sideprojects\python-playground\MLCourseAssignments\DataAssignment3\ex3data1.mat'
-    
-
-if gettrace():
+    print('In Debug Mode!')
     filePathTheta = 'D:\workspace\sideprojects\python-playground\MLCourseAssignments\DataAssignment3\ex3weights.mat'
+    filePath = 'D:\workspace\sideprojects\python-playground\MLCourseAssignments\DataAssignment3\ex3data1.mat'
 
 mat_t = io.loadmat(filePathTheta)
 mat = io.loadmat(filePath)
@@ -30,8 +27,19 @@ mat = io.loadmat(filePath)
 Theta1, Theta2 = mat_t['Theta1'], mat_t['Theta2']
 X, y = mat['X'], mat['y']
 
+X = np.insert(X, 0, 1, axis=1)
+
 print("Theta1 has shape:",Theta1.shape)
 print("Theta2 has shape:",Theta2.shape)
+
+def getDatumImg(row):
+	"""
+    Function that is handed a single np array with shape 1x400,
+    reshape it into 20x20 numpy array then transpose it
+    """
+	width,height = 20, 20
+	square = row[1:].reshape(width,height)
+	return square.T
 
 def sigmoid(x):
     return (1 / (1 + np.exp(-x)))
@@ -43,10 +51,8 @@ def propagateForward(row, Thetas):
     include the bias unit in the input layer, and the 
     Thetas need the bias unit added to features between each layer
     """
-    features = np.insert(row,0,1) # shape: (401,1)
-
     Theta = Thetas[0] # shape: (25, 401)
-    z = Theta.dot(features) # shape: (25, 1)
+    z = Theta.dot(row) # shape: (25, 1)
     a = sigmoid(z) # shape: (25, 1)
     a = np.insert(a,0,1) # shape: (26, 1)
 
@@ -56,21 +62,27 @@ def propagateForward(row, Thetas):
 
     return _a
 
-    # for i in range(len(Thetas)):
-    #     Theta = Thetas[i] # shape: (25, 401)
-    #     z = Theta.dot(features) # shape: (25, 1)
-    #     a = sigmoid(z) # shape: (25, 1)
-    #     if (i == (len(Thetas) - 1)):
-    #         return a
-    #     a[0] = 1 # Add the bias unit
-    #     features = a
+# Same as propagateForward but is written in another way
+def _propagateForward(row,Thetas):
+    features = row
+
+    for i in range(len(Thetas)):
+        Theta = Thetas[i] # shape: (25, 401)
+        z = Theta.dot(features) # shape: (25, 1)
+        a = sigmoid(z) # shape: (25, 1)
+        if (i == (len(Thetas) - 1)):
+            return a
+        a = np.insert(a, 0, 1)# Add the bias unit
+        features = a
 
 def predictNN(row, Thetas):
     """
     Function that takes a row of features, propagates them through the
     NN, and returns the predicted integer that was hand written
     """
-    classes = [10,1,2,3,4,5,6,7,8,9]
+    classes = []
+    for i in range(1,11):
+        classes.append(i)
     output = propagateForward(row,Thetas)
     return classes[np.argmax(np.array(output))]
 
@@ -88,3 +100,15 @@ for irow in range(X.shape[0]):
 	else:
 		incorrect_indices.append(irow)
 print("Training set accuracy: %0.1f%%"%(100*(n_correct/n_total)))
+
+print('Show some random incorrect predictions: ')
+
+for i in range(5):
+    i = random.choice(incorrect_indices) # pick a random element in a equence
+    fig = plt.figure(figsize=(3,3))
+    img = scipy.misc.toimage(getDatumImg(X[i]))
+    plt.imshow(img, cmap= 'gray')
+    predicted_val = predictNN(X[i], myThetas)
+    predicted_val = 0 if predicted_val == 10 else predicted_val
+    fig.suptitle('Predicted: %d'%predicted_val, fontsize=14, fontweight='bold')
+    plt.show()
