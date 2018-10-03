@@ -1,4 +1,5 @@
 import numpy as np
+import itertools
 
 # x = [1,2,3,4,5,6,7,8,9]
 
@@ -86,6 +87,12 @@ import numpy as np
 # print(B)
 # None, False, '' and 0 equal to False
 
-a = [0]*2
+# a = [0]*2
 
-print(a)
+# print(a)
+
+# assert 1 == 2
+
+a = np.array([[1], [3], [5,6]])
+
+print(list(itertools.chain.from_iterable(a.flatten())))
