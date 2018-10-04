@@ -5,6 +5,7 @@ import numpy as np
 import scipy
 import matplotlib.pyplot as plt
 import matplotlib.cm as cm
+import itertools
 
 def getDatumImg(row):
 	"""
@@ -50,7 +51,10 @@ def displayData(X, indices_to_display = None):
 	plt.imshow(img,cmap = 'gray')
 	plt.show()
 
-def flattenParams(thetas_list):
+# Some utility functions. There are lot of flattening and
+# reshaping of theta matrices, the input X matrix, etc...
+# Nicely shaped matrices make the linear algebra easier when developing
+def flattenParams(thetas_list, input_layer_size, hidden_layer_size, output_layer_size):
     """
     Hand this function a list of theta matrices and it will flatten it 
     into one long (n, 1) shaped numpy array
@@ -66,5 +70,24 @@ def flattenParams(thetas_list):
 
     return np.array(combined).reshape((len(combined),1))
 
-def reshapeParams(flattened_array):
-	theta1 = fl
+def reshapeParams(flattened_array, input_layer_size, hidden_layer_size, output_layer_size):
+	"""
+	This fucntion reshape a flattened array into the original theta 1 and 2
+	"""
+	theta1 = flattened_array[:(input_layer_size + 1)*hidden_layer_size].reshape((hidden_layer_size, input_layer_size + 1))
+
+	theta2 = flattened_array[(input_layer_size + 1)*hidden_layer_size:].reshape((output_layer_size, hidden_layer_size + 1))
+
+	return [theta1, theta2]
+
+def flattenX(myX, n_training_samples, input_layer_size):
+	"""
+	(m input, each input is (1,n) vector) => a ((m*(n+1)),1) vector
+	"""
+	return np.array(myX.flatten()).reshape((n_training_samples*(input_layer_size + 1), 1))
+
+def reshapeX(flattenedX, n_training_samples, input_layer_size):
+	"""
+	a flatten array (1, m*(n+1)) => (m, n+ 1) array
+	"""
+	return np.array(flattenedX).reshape(n_training_samples, input_layer_size + 1)

@@ -93,6 +93,12 @@ import itertools
 
 # assert 1 == 2
 
-a = np.array([[1], [3], [5,6]])
+# a = np.array([[1], [3], [5,6]])
 
-print(list(itertools.chain.from_iterable(a.flatten())))
+# print(list(itertools.chain.from_iterable(a.flatten())))
+
+a = np.array([1,2])
+
+b = np.array([1,2])
+
+print(np.insert(a,0,1))
