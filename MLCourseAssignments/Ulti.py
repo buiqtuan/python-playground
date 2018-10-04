@@ -50,3 +50,21 @@ def displayData(X, indices_to_display = None):
 	plt.imshow(img,cmap = 'gray')
 	plt.show()
 
+def flattenParams(thetas_list):
+    """
+    Hand this function a list of theta matrices and it will flatten it 
+    into one long (n, 1) shaped numpy array
+    """
+    # flatten an numpy array
+    # ex1: np.array([[1], [3], [5,6]]) => [list(1), list(3), list(5,6)]
+    # ex2: np.array([[1], [3], [5]]) => [1, 3, 5]
+    flattened_list = [ myTheta.flatten() for myTheta in thetas_list ]
+    # combine all sub array in an array into a big array
+    combined = list(itertools.chain.from_iterable(flattened_list))
+
+    assert len(combined) == (input_layer_size + 1)*hidden_layer_size + (hidden_layer_size + 1)*output_layer_size
+
+    return np.array(combined).reshape((len(combined),1))
+
+def reshapeParams(flattened_array):
+	theta1 = fl
