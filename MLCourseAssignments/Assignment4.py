@@ -10,6 +10,7 @@ import matplotlib.cm as cm
 from scipy import io as io
 from scipy import optimize
 import itertools
+import time
 import Ulti
 
 filePathTheta = './DataAssignment3/ex3weights.mat'
@@ -131,7 +132,7 @@ def propagateForward(row, Thetas):
         # So z comes out to be (25,1)
         # This is one z value for each unit in the hidden layer
         # Not counting the bias unit
-        z = Theta.dot(features)
+        z = Theta.dot(features).reshape((Theta.shape[0],1))
         a = Ulti.sigmoid(z)
         zs_as_per_layer.append((z,a))
         if (i == len(Thetas) - 1):
@@ -139,4 +140,155 @@ def propagateForward(row, Thetas):
         a = np.insert(a, 0, 1) # Add the bias unit
         features = a
 
-print(computeCost(Ulti.flattenParams(myThetas, input_layer_size, hidden_layer_size, output_layer_size), Ulti.flattenX(X,n_training_sample,input_layer_size), y))
+# print(computeCost(Ulti.flattenParams(myThetas, input_layer_size, hidden_layer_size, output_layer_size), Ulti.flattenX(X,n_training_sample,input_layer_size), y))
+
+def genRandomThetas():
+    epsilon_init = 0.12 
+    theta1_shape = (hidden_layer_size, input_layer_size + 1)
+    theta2_shape = (output_layer_size, hidden_layer_size + 1)
+    return [ np.random.rand(*theta1_shape)*2*epsilon_init - epsilon_init, np.random.rand(*theta2_shape)*2*epsilon_init - epsilon_init]
+
+def backPropagate(myThetas_flattened, myX_flattened, myY, myLamda = .0):
+    # First unroll the params
+    _myThetas = Ulti.reshapeParams(myThetas_flattened, input_layer_size, hidden_layer_size, output_layer_size)
+    # Unroll X
+    _myX = Ulti.reshapeX(myX_flattened, n_training_sample, input_layer_size)
+
+    m = n_training_sample
+
+    # The Delta matrices should include the bias unit
+    # The Delta matrices have the same shape as the theta matrices
+    Delta1 = np.zeros((hidden_layer_size, input_layer_size + 1))
+    Delta2 = np.zeros((output_layer_size, hidden_layer_size + 1))
+
+    for irow in range(m):
+        myRow = _myX[irow]
+
+        a1 = myRow.reshape((input_layer_size + 1, 1))
+
+        # propagateForward returns (zs, activations) for each layer excluding the input layer
+        temp = propagateForward(myRow, _myThetas)
+
+        z2 = temp[0][0]
+        a2 = temp[0][1]
+        z3 = temp[1][0]
+        a3 = temp[1][1]
+
+        tmpy = np.zeros((10,1))
+        k = myY[irow] - 1
+        tmpy[k] = 1
+
+        delta3 = a3 - tmpy
+        delta2 = _myThetas[1].T[1:,:].dot(delta3)*(Ulti.sigmoidGradient(z2)) #remove the 0th element in hidden layer
+
+        a2 = np.insert(a2, 0, 1, axis=0)
+
+        Delta1 += delta2.dot(a1.T) # (25,1)*(1*401) = (25*401)
+        Delta2 += delta3.dot(a2.T) # (10,1)*(1*26) = (10,26)
+
+    D1, D2 = Delta1/float(m), Delta2/float(m)
+
+    # Gradient Regularization
+    D1[:,1:] = D1[:,1:] + (float(myLamda)/m)*_myThetas[0][:,1:]
+    D2[:,1:] = D2[:,1:] + (float(myLamda)/m)*_myThetas[1][:,1:]
+
+    return Ulti.flattenParams([D1, D2], input_layer_size, hidden_layer_size, output_layer_size).flatten()
+
+flattendD1D2 = backPropagate(Ulti.flattenParams(myThetas, input_layer_size, hidden_layer_size, output_layer_size), Ulti.flattenX(X,n_training_sample,input_layer_size), y, myLamda=.0)
+
+D1, D2 = Ulti.reshapeParams(flattendD1D2, input_layer_size, hidden_layer_size, output_layer_size)
+
+def checkingGradient(Thetas, myDs, myX, myY, myLamda = .0):
+    # this value is picked in the Document
+    myEsp = 10e-4
+    # flatten input
+    flattened = Ulti.flattenParams(Thetas, input_layer_size, hidden_layer_size, output_layer_size)
+    flattenedDs = Ulti.flattenParams(myDs, input_layer_size, hidden_layer_size, output_layer_size)
+    myX_flattened = Ulti.flattenX(myX, n_training_sample, input_layer_size)
+    n_elems = len(flattened)
+    # pick random 10 elements
+    for i in range(10):
+        x = int(np.random.rand()*n_elems)
+        epsvec = np.zeros((n_elems, 1))
+        epsvec[x] = myEsp
+
+        cost_high = computeCost(flattened + epsvec, myX_flattened, myY, myLamda)
+        cost_low = computeCost(flattened - epsvec, myX_flattened, myY, myLamda)
+
+        myGrad = (cost_high - cost_low)/(2*myEsp)
+        print("Element: %d. Numerical Gradient = %f. BackProp Gradient = %f"%(x, myGrad, flattenedDs[x]))
+
+checkingGradient(myThetas, [D1, D2], X, y)
+
+# Learning params using fmin_cg
+
+def trainNN(myLamda = 5.0):
+    """
+    Function that generates random initial theta matrices, optimize them 
+    and return a list of reshaped theta matrices
+    """
+    started_time = time.time()
+    random_thetas = Ulti.flattenParams(genRandomThetas(), input_layer_size, hidden_layer_size, output_layer_size)
+
+    result = scipy.optimize.fmin_cg(computeCost, x0 = random_thetas, fprime=backPropagate, 
+                args=(Ulti.flattenX(X, n_training_sample, input_layer_size), y, myLamda), maxiter=50, disp=True, full_output=True)
+
+    print("Done training in: %i seconds"%(time.time() - started_time))
+    return Ulti.reshapeParams(result[0], input_layer_size, hidden_layer_size, output_layer_size)
+
+learnt_theta = trainNN()
+
+def predictNN(row, Thetas):
+    """
+    Function that takes a row of features, propagates them through the
+    NN, and returns the predicted integer that was hand written
+    """
+    classes = [i for i in range(1,11)]
+
+    output = propagateForward(row, Thetas)
+
+    return classes[np.argmax(output[-1][1])]
+
+def computeAccuracy(myX, myThetas, myY):
+    """
+    Function that loops over all of the rows in X (all of the handwritten images)
+    and predicts what digit is written given the thetas. Check if it's correct, and
+    compute an efficiency.
+    """
+    n_correct, n_total = 0, myX.shape[0]
+    for irow in range(n_total):
+        if (predictNN(myX[irow], myThetas) == int(myY[irow])):
+            n_correct += 1
+
+    print("Training set accuracy: %f"%(float(n_correct)/n_total))
+
+computeAccuracy(X, myThetas, y)
+        
+def displayHiddenUnit(myTheta):
+    """
+    """
+    # Remote bias unit
+    myTheta = myTheta[:,1:]
+
+    assert myTheta.shape == (25,400)
+
+    width, height = 20, 20
+    nrows, ncols = 5, 5
+
+    big_picture = np.zeros((width*ncols,height*nrows))
+
+    irow, icol = 0, 0
+    for row in myTheta:
+        if (icol == ncols):
+            irow += 1
+            icol = 0
+        # Add back bias unit
+        iimg = Ulti.getDatumImg(np.insert(row,0,1))
+        big_picture[irow*height:irow*height+iimg.shape[0],icol*width:icol*width+iimg.shape[1]] = iimg
+        icol += 1
+    fig = plt.figure(figsize=(6,6))
+    img = scipy.misc.toimage(big_picture)
+    plt.imshow(img,cmap = 'gray')
+    plt.show()
+
+displayHiddenUnit(learnt_theta[0])

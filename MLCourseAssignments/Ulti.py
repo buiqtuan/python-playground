@@ -91,3 +91,7 @@ def reshapeX(flattenedX, n_training_samples, input_layer_size):
 	a flatten array (1, m*(n+1)) => (m, n+ 1) array
 	"""
 	return np.array(flattenedX).reshape(n_training_samples, input_layer_size + 1)
+
+def sigmoidGradient(x):
+	g = sigmoid(x)
+	return np.array(g*(1 - g))
