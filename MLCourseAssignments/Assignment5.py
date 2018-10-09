@@ -41,7 +41,6 @@ def plotData():
     plt.xlabel('Change in water level (x)')
     plt.plot(X[:,1], Y, 'rx')
     plt.grid(True)
-    plt.show()
 
 # plotData()
 
@@ -63,4 +62,40 @@ def computeCost(myTheta, myX, myY, myLamda = .0):
 
 myTheta = np.array([[1.],[1.]])
 
-print(computeCost(myTheta, X, Y, myLamda=1.))
+# print(computeCost(myTheta, X, Y, myLamda=1.))
+
+def computeGradient(myTheta, myX, myY, myLamda=.0):
+    myTheta = myTheta.reshape((myTheta.shape[0],1))
+    m =  myX.shape[0]
+
+    myH = h(myTheta, myX)
+    grad = float(1/m) * (myH - myY).T.dot(myX)
+
+    regTerm = float(myLamda/m) * myTheta
+
+    regTerm = np.delete(regTerm, 0) # Don't regulate bias unit
+
+    return (grad + regTerm)[0]
+
+# print(computeGradient(myTheta, X, Y, 1))
+
+def optimizeTheta(myTheta_initial, myX, myY, myLamda=.0, print_output = True):
+    fit_theta = scipy.optimize.fmin_cg(computeCost, 
+                                        x0=myTheta_initial, 
+                                        fprime=computeGradient, 
+                                        args=(myX, myY, myLamda),
+                                        disp=print_output, 
+                                        epsilon=1e-5, 
+                                        maxiter=1000)
+    fit_theta = fit_theta.reshape((myTheta_initial.shape[0],1))
+
+    return fit_theta
+
+fit_theta = optimizeTheta(myTheta, X, Y, 0.)
+
+print(fit_theta)
+
+# DRAW TWO FIGURES AT THE SAME WINDOW
+# plotData()
+# plt.plot(X[:,1], h(fit_theta,X).flatten())
+# plt.show()
