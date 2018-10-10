@@ -99,3 +99,74 @@ print(fit_theta)
 # plotData()
 # plt.plot(X[:,1], h(fit_theta,X).flatten())
 # plt.show()
+
+# this function is running with a error, not urgent,
+# fix it as soon as you're about to complete assignment 5
+def plotLearningCurve():
+    """
+    Loop over first training point, then first 2 training points, then first 3 ...
+    and use each training-set-subset to find trained parameters.
+    With those parameters, compute the cost on that subset (Jtrain)
+    remembering that for Jtrain, lambda = 0 (even if you are using regularization).
+    Then, use the trained parameters to compute Jval on the entire validation set
+    again forcing lambda = 0 even if using regularization.
+    Store the computed errors, error_train and error_val and plot them.
+    """
+    initial_theta = np.array([[1.],[1.]])
+    myM, error_training, error_val = [], [], []
+    for x in range(1,13,1):
+        train_subset = X[:x,:]
+        y_subset = Y[:x]
+        myM.append(y_subset.shape[0])
+        fit_theta = optimizeTheta(initial_theta, train_subset, y_subset, myLamda=.0, print_output=False)
+        error_training.append(computeCost(fit_theta, train_subset, y_subset, myLamda=.0))
+        error_val.append(computeCost(fit_theta, Xval, Yval, myLamda=.0))
+
+    plt.figure(figsize=(8,5))
+    plt.plot(myM, error_training, label='Traing')
+    plt.plot(myM, error_val, label='Cross Validation')
+    plt.legend()
+    plt.title('Polynomial Regression Learning Curve (lambda = 0)')
+    plt.xlabel('Number of training examples')
+    plt.ylabel('Error')
+    plt.grid(True)
+
+# plotLearningCurve()
+# plt.show()
+    
+def genPolyFeatures(myX, p):
+    """
+    Function takes in the X matrix (with bias term already included as the first column)
+    and returns an X matrix with "p" additional columns.
+    The first additional column will be the 2nd column (first non-bias column) squared,
+    the next additional column will be the 2nd column cubed, etc.
+    """
+    newX = myX.copy()
+
+    for i in range(p):
+        dim = i + 2
+        newX = np.insert(newX, newX.shape[1], np.power(newX[:,1], dim), axis=1)
+
+    return newX
+
+def featuresNormalize(myX):
+    """
+    Takes as input the X array (with bias "1" first column), does
+    feature normalizing on the columns (subtract mean, divide by standard deviation).
+    Returns the feature-normalized X, and feature means and stds in a list
+    """
+
+    Xnorm = myX.copy()
+    stored_feature_means = np.mean(Xnorm, axis=0) # column by column
+    Xnorm[:,1:] = Xnorm[:,1:] - stored_feature_means[1:]
+    stored_feature_stds = np.std(Xnorm, axis=0, ddof=1)
+    Xnorm[:,1:] = Xnorm[:,1:] / stored_feature_stds[1:]
+
+    return Xnorm, stored_feature_means, stored_feature_stds
+
+global_d = 5
+newX = genPolyFeatures(X, global_d)
+newX_norm, stored_means, stored_stds = featuresNormalize(newX)
+
+_myTheta = np.ones((newX_norm.shape[1],1))
+fit_theta = optimizeTheta(_myTheta, newX_norm, Y, myLamda=.0)

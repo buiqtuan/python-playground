@@ -97,8 +97,16 @@ import itertools
 
 # print(list(itertools.chain.from_iterable(a.flatten())))
 
-a = np.array([1,2])
+# a = np.array([1,2])
 
-b = np.array([1,2])
+# b = np.array([1,2])
 
-print(np.insert(a,0,1))
+# c = np.array([[1],[2],[3]])
+
+# d = np.insert(c,c.shape[1],-1, axis=1)
+# print(c.shape)
+# print(d.shape)
+# print(c)
+# print(d[:,1])
+
+print(np.std([1,3,4,6], ddof=1))
