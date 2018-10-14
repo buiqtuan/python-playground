@@ -109,4 +109,8 @@ import itertools
 # print(c)
 # print(d[:,1])
 
-print(np.std([1,3,4,6], ddof=1))
+# print(np.std([1,3,4,6], ddof=1))
+
+a = 'a                b  c'
+
+print(a.split())
