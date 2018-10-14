@@ -1,5 +1,6 @@
 matplotlib
 scikit-learn
+sklearn
 scipy
 tflearn
 pandas
