@@ -111,6 +111,14 @@ import itertools
 
 # print(np.std([1,3,4,6], ddof=1))
 
-a = 'a                b  c'
+# a = 'a                b  c'
 
-print(a.split())
+# print(a.split())
+
+a = [1,2,3,4,5,1,1]
+
+b = np.array([1,2,3,4,5,1,1])
+
+print(sum(b==1))
+
+print(sum([i for i in a if i == 1]))

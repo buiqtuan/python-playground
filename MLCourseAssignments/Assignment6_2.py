@@ -18,6 +18,7 @@ import nltk
 spamTestFilePath = './DataAssignment6/spamTest.mat'
 spamTrainFilePath = './DataAssignment6/spamTrain.mat'
 vocabDictPath = './DataAssignment6/vocab.txt'
+sampleEmail1Path = './DataAssignment6/emailSample1.txt'
 
 # Check if in debug mode
 gettrace = getattr(sys, 'gettrace', None)
@@ -26,7 +27,8 @@ if gettrace():
     print('In Debug Mode!')
     spamTestFilePath = 'D:\workspace\sideprojects\python-playground\MLCourseAssignments\DataAssignment6\spamTest.mat'
     spamTrainFilePath = 'D:\workspace\sideprojects\python-playground\MLCourseAssignments\DataAssignment6\spamTrain.mat'
-    vocabDictPath = 'D:\workspace\sideprojects\python-playground\MLCourseAssignments\DataAssignment6\vocab.txt'
+    vocabDictPath = 'D:\workspace\sideprojects\python-playground\MLCourseAssignments\DataAssignment6\//vocab.txt'
+    sampleEmail1Path = 'D:\workspace\sideprojects\python-playground\MLCourseAssignments\DataAssignment6\emailSample1.txt'
 
 # check that nltk modules has been downloaded?
 try:
@@ -35,7 +37,7 @@ except LookupError:
 	print('nltk models has not been downloaded!! -> process downloading models')
 	nltk.download()
 
-sampleEmail1 = open('./DataAssignment6/emailSample1.txt','r')
+sampleEmail1 = open(sampleEmail1Path,'r')
 
 # print(sampleEmail1.read())
 
@@ -135,5 +137,24 @@ def emailToVocabIndices(email, vocab_list):
     indexList = [vocab_list[token] for token in tokenList if token in vocab_list]
     return indexList
 
+# print(emailToVocabIndices(sampleEmail1.read(), getVocabDict()))
 
-print(emailToVocabIndices(sampleEmail1.read(), getVocabDict()))
+def email2FeatureVector(email: str, vocab_list: dict):
+    """
+    Function that takes as input a raw email, and returns a vector of shape
+    (n,1) where n is the size of the vocab_dict.
+    The first element in this vector is 1 if the vocab word with index == 1
+    is in the raw_email, 0 otherwise.
+    """
+    n = len(vocab_list)
+    result = np.zeros((n,1))
+    vocal_indices = emailToVocabIndices(email, vocab_list)
+    for i in vocal_indices:
+        result[i] = 1
+    return result
+
+vocab_dict = getVocabDict()
+result = email2FeatureVector(sampleEmail1.read(), vocab_dict)
+
+print('Length of feature vector is %d'%len(result))
+print('Length of non zero features is %d'%sum(result==1)) # only for numpy array
