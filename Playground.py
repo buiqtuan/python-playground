@@ -115,10 +115,14 @@ import itertools
 
 # print(a.split())
 
-a = [1,2,3,4,5,1,1]
+# a = [1,2,3,4,5,1,1]
 
-b = np.array([1,2,3,4,5,1,1])
+# b = np.array([1,2,3,4,5,1,1])
 
-print(sum(b==1))
+# print(sum(b==1))
 
-print(sum([i for i in a if i == 1]))
+# print(sum([i for i in a if i == 1]))
+
+a = np.array([0,1,2,3,4])
+
+print(a[::-1])

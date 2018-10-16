@@ -153,8 +153,56 @@ def email2FeatureVector(email: str, vocab_list: dict):
         result[i] = 1
     return result
 
-vocab_dict = getVocabDict()
-result = email2FeatureVector(sampleEmail1.read(), vocab_dict)
+# vocab_dict = getVocabDict()
+# result = email2FeatureVector(sampleEmail1.read(), vocab_dict)
 
-print('Length of feature vector is %d'%len(result))
-print('Length of non zero features is %d'%sum(result==1)) # only for numpy array
+# print('Length of feature vector is %d'%len(result))
+# print('Length of non zero features is %d'%sum(result==1)) # only for numpy array
+
+# Load training set
+spamTrainingSet = io.loadmat(spamTrainFilePath)
+
+X, Y = spamTrainingSet['X'], spamTrainingSet['y']
+#NOT inserting a column of 1's in case SVM software does it automatically...
+#X = np.insert(X, 0, 1, axis=1)
+
+# Load test set
+spamTestingSet = io.loadmat(spamTestFilePath)
+XTest, YTest = spamTestingSet['Xtest'], spamTestingSet['ytest']
+
+pos = np.array([X[i] for i in range(X.shape[0]) if Y[i] == 1])
+neg = np.array([X[i] for i in range(X.shape[0]) if Y[i] == 0])
+
+# print('Total number of training emails = ',X.shape[0])
+# print('Number of training spam emails = ',pos.shape[0])
+# print('Number of training nonspam emails = ',neg.shape[0])
+
+# Create and train SVM model with C = .1 and kernel = 'linear'
+linear_svm = svm.SVC(C=.1, kernel='linear')
+
+linear_svm.fit(X, Y.flatten())
+
+# train_predictions = linear_svm.predict(X).reshape((Y.shape[0],1))
+# train_accuracy = 100. * float(sum(train_predictions == Y))/Y.shape[0]
+# print('Training accuracy = %0.2f' % train_accuracy)
+
+# test_predictions = linear_svm.predict(XTest).reshape((YTest.shape[0],1))
+# test_accuracy = 100. * float(sum(test_predictions == YTest))/YTest.shape[0]
+# print('Testing accuracy = %0.2f' % test_accuracy)
+
+# Determine the words most likely to indicate an e-mail is a spam
+# From the trained SVM we can get a list of the weight coefficients for each
+# word (technically, each word index)
+
+vocab_dict_flipped = getVocabDict(reversed=True)
+
+# Sort indicies from most important to least-important (high to low weight)
+# Numpy array: [::-1] reverse an array
+# coef_ is the weight for each input, this is only available in linear kernel
+sorted_indices = np.argsort(linear_svm.coef_, axis=None)[::-1]
+
+print("The 15 most important words to classify a spam e-mail are:")
+print([vocab_dict_flipped[x] for x in sorted_indices[:15]])
+
+print("The 15 least important words to classify a spam e-mail are:")
+print([vocab_dict_flipped[x] for x in sorted_indices[-15:]])
