@@ -8,20 +8,23 @@ import matplotlib.pyplot as plt
 import matplotlib.cm as cm
 from scipy import io
 from scipy import linalg
+import imageio
 
-birdSmallPath = './DataAssignment7/bird_small.mat'
+birdMatPath = './DataAssignment7/bird_small.mat'
+birdImgPath = './DataAssignment7/bird_small.png'
 ex7data1Path = './DataAssignment7/ex7data1.mat'
 ex7data2Path = './DataAssignment7/ex7data2.mat'
-ex7data3Path = './DataAssignment7/ex7data3.mat'
+ex7data3Path = './DataAssignment7/ex7faces.mat'
 
 # Check if in debug mode
 gettrace = getattr(sys, 'gettrace', None)
 
 if (gettrace()):
-	birdSmallPath = 'D:\workspace\sideprojects\python-playground\MLCourseAssignments\DataAssignment7\bird_small.mat'
+	birdMatPath = 'D:\workspace\sideprojects\python-playground\MLCourseAssignments\DataAssignment7//bird_small.mat'
+	birdImgPath = 'D:\workspace\sideprojects\python-playground\MLCourseAssignments\DataAssignment7//bird_small.png'
 	ex7data1Path = 'D:\workspace\sideprojects\python-playground\MLCourseAssignments\DataAssignment7\ex7data1.mat'
 	ex7data2Path = 'D:\workspace\sideprojects\python-playground\MLCourseAssignments\DataAssignment7\ex7data2.mat'
-	ex7data3Path = 'D:\workspace\sideprojects\python-playground\MLCourseAssignments\DataAssignment7\ex7data3.mat'
+	ex7data3Path = 'D:\workspace\sideprojects\python-playground\MLCourseAssignments\DataAssignment7\ex7faces.mat'
 
 # load data from mat file
 ex7data2 = io.loadmat(ex7data2Path)
@@ -114,7 +117,7 @@ def findClosesetCentroids(myX, myCentroids):
 	
 	return idxs
 
-idxs = findClosesetCentroids(X, initial_centroids)
+# idxs = findClosesetCentroids(X, initial_centroids)
 
 # print(idxs[:3].flatten())
 
@@ -155,8 +158,45 @@ def chooseKRandomCentroids(myX, K):
 	rand_indices = sample(range(0, myX.shape[0]), K)
 	return np.array([myX[i] for i in rand_indices])
 
-for x in range(3):
-	idxs, centroid_history = runKMeans(X, chooseKRandomCentroids(X, K=3), K=3, n_iter=10)
+# for x in range(3):
+# 	idxs, centroid_history = runKMeans(X, chooseKRandomCentroids(X, K=3), K=3, n_iter=10)
 
-	plotData(X, centroid_history, idxs)
-	plt.show()
+# 	plotData(X, centroid_history, idxs)
+# 	plt.show()
+
+birdImg = imageio.imread(birdImgPath)
+print("BirdImg shape is: ", birdImg.shape)
+
+# plt.imshow(birdImg)
+# plt.show()
+
+# Divide every entry in A by 255 so all values are in the range of 0 to 1
+birdImg = birdImg / 255
+
+# Unroll the image to shape (16384,3) (16384 is 128*128)
+birdImg = birdImg.reshape(-1, 3)
+
+# Run k-means on this data, forming 16 clusters, with random initialization
+myK = 16
+idxs, centroid_history = runKMeans(birdImg, chooseKRandomCentroids(birdImg, myK), myK, n_iter=10)
+
+# Now I have 16 centroids, each representing a color.
+# Let's assign an index to each pixel in the original image dictating
+# which of the 16 colors it should be
+idxs = findClosesetCentroids(birdImg, centroid_history[-1])
+
+final_centroids = centroid_history[-1]
+# Now loop through the original image and form a new image
+# that only has 16 colors in it
+final_image = np.zeros((idxs.shape[0],3))
+for x in range(final_image.shape[0]):
+	final_image[x] = final_centroids[int(idxs[x])]
+
+# Reshape the original image and the new, final image and draw them
+# To see what the "compressed" image looks like
+plt.figure()
+dummy = plt.imshow(birdImg.reshape(128,128,3))
+plt.show()
+plt.figure()
+dummy = plt.imshow(final_image.reshape(128,128,3))
+plt.show()

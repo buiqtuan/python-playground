@@ -10,3 +10,4 @@ numpy-mkl
 h5py
 curses
 nltk
+imageio
