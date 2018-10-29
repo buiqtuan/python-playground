@@ -20,11 +20,11 @@ ex7data3Path = './DataAssignment7/ex7faces.mat'
 gettrace = getattr(sys, 'gettrace', None)
 
 if (gettrace()):
-	birdMatPath = 'D:\workspace\sideprojects\python-playground\MLCourseAssignments\DataAssignment7//bird_small.mat'
-	birdImgPath = 'D:\workspace\sideprojects\python-playground\MLCourseAssignments\DataAssignment7//bird_small.png'
-	ex7data1Path = 'D:\workspace\sideprojects\python-playground\MLCourseAssignments\DataAssignment7\ex7data1.mat'
-	ex7data2Path = 'D:\workspace\sideprojects\python-playground\MLCourseAssignments\DataAssignment7\ex7data2.mat'
-	ex7data3Path = 'D:\workspace\sideprojects\python-playground\MLCourseAssignments\DataAssignment7\ex7faces.mat'
+	birdMatPath = 'D:\Workspaces\GIT\py-play\MLCourseAssignments\DataAssignment7//bird_small.mat'
+	birdImgPath = 'D:\Workspaces\GIT\py-play\MLCourseAssignments\DataAssignment7//bird_small.png'
+	ex7data1Path = 'D:\Workspaces\GIT\py-play\MLCourseAssignments\DataAssignment7\ex7data1.mat'
+	ex7data2Path = 'D:\Workspaces\GIT\py-play\MLCourseAssignments\DataAssignment7\ex7data2.mat'
+	ex7data3Path = 'D:\Workspaces\GIT\py-play\MLCourseAssignments\DataAssignment7\ex7faces.mat'
 
 # load data from mat file
 ex7data2 = io.loadmat(ex7data2Path)

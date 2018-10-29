@@ -42,4 +42,18 @@ def gaus(myX, myMu, mySig2):
     If sigma is a vector, it is turned into a diagonal matrix
     Uses a loop over rows; didn't quite figure out a vectorized implementation.
     """
-    
+    m = myX.shape[0]
+    n = myX.shape[1]
+    if (np.ndim(mySig2) == 1):
+        mySig2 = np.diag(mySig2)
+
+    # np.linalg.det: calculate determinant of a matrix
+    norm = 1/(np.power((2*np.pi), n/2)*np.sqrt(np.linalg.det(mySig2)))
+    myinv = np.linalg.inv(mySig2)
+    myexp = np.zeros((m,1))
+
+    for i in range(m):
+        xrow = myX[i]
+        myexp[i] = np.exp(-0.5*((xrow-mymu).T).dot(myinv).dot(xrow-mymu))
+
+    return norm*myexp
