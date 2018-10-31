@@ -114,3 +114,27 @@ def plotContours(myMu, mySigma2, newFig=False):
 # plotData(X, newFig=True)
 # plotContours(*getGaussianParams(X,useMultivariate=False), newFig=False)
 # plt.show()
+
+def computeF1(predVec, trueVec):
+    """
+    F1 = 2 * (P*R)/(P+R)
+    where P is precision, R is recall
+    Precision = "of all predicted y=1, what fraction had true y=1"
+    Recall = "of all true y=1, what fraction predicted y=1?
+    Note predictionVec and trueLabelVec should be boolean vectors.
+    """
+    P, R = 0., 0.
+    if (float(np.sum(predVec))):
+        P = np.sum([int(trueVec[x]) for x in range(predVec.shape[0]) if predVec[x]]) / float(np.sum(predVec))
+
+    if (float(np.sum(trueVec))):
+        P = np.sum([int(predVec[x]) for x in range(trueVec.shape[0]) if trueVec[x]]) / float(np.sum(trueVec))
+
+    return 2*P*R/(P+R) if (P+R) else 0
+
+def selectThreshold(myYCV, myPCVs):
+    """
+    Function to select the best epsilon value from the CV set
+    by looping over possible epsilon values and computing the F1
+    score for each.
+    """
