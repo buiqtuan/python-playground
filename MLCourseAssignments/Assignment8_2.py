@@ -10,14 +10,17 @@ from scipy import io
 
 ex8moviesPath = './DataAssignment8/ex8_movies.mat'
 ex8movieParamsPath = './DataAssignment8/ex8_movieParams.mat'
+movie_idsPath = './DataAssignment8/movie_ids.txt'
 
+np.random.seed(7)
 # Check if in debug mode
 gettrace = getattr(sys, 'gettrace', None)
 
 if (gettrace()):
     print('In debug Mode!')
-    ex8moviesPath = 'D:\workspace\sideprojects\python-playground\MLCourseAssignments\DataAssignment8\ex8_movies.mat'
-    ex8movieParamsPath = 'D:\workspace\sideprojects\python-playground\MLCourseAssignments\DataAssignment8\ex8_movieParams.mat'
+    ex8moviesPath = 'D:\Workspaces\GIT\py-play\MLCourseAssignments\DataAssignment8\ex8_movies.mat'
+    ex8movieParamsPath = 'D:\Workspaces\GIT\py-play\MLCourseAssignments\DataAssignment8\ex8_movieParams.mat'
+    movie_idsPath = 'D:\Workspaces\GIT\py-play\MLCourseAssignments\DataAssignment8\movie_ids.txt'
 
 ex8_movies = io.loadmat(ex8moviesPath)
 Y = ex8_movies['Y']
@@ -42,6 +45,11 @@ X = X[:nm,:nf]
 Theta = Theta[:nu,:nf]
 Y = Y[:nm,:nu]
 R = R[:nm,:nu]
+
+movies = []
+with open(movie_idsPath) as f:
+    for line in f:
+        movies.append(' '.join(line.strip('\n').split(' ')[1:]))
 
 # "Visualize the ratings matrix"
 def plotRatingMatrix(myY):
@@ -84,7 +92,7 @@ def reshapeParams(flattened_XandTheta, myNM, myNU, myNF):
     
     return reX, reTheta
 
-def cofiCostFunc(myParams, myY, myR, myNU, myNM, myNF, myLamda=0.):
+def cofiCostFunc(myParams, myY, myR, myNU, myNM, myNF, myLambda=0.):
 
     # Unfold the X and Theta matrices from the flattened params
     myX, myTheta = reshapeParams(myParams, myNM, myNU, myNF)
@@ -109,11 +117,94 @@ def cofiCostFunc(myParams, myY, myR, myNU, myNM, myNF, myLamda=0.):
     cost = 0.5*np.sum(np.square(term1 - myY))
 
     # regularization stuff
-    cost += (myLamda/2.) * np.sum(np.square(myTheta))
-    cost += (myLamda/2.) * np.sum(np.square(myX))
+    cost += (myLambda/2.) * np.sum(np.square(myTheta))
+    cost += (myLambda/2.) * np.sum(np.square(myX))
 
     return cost
 
-print('Cost with nu = 4, nm = 5, nf = 3 is %0.2f.' %cofiCostFunc(flattenParams(X,Theta),Y,R,nu,nm,nf))
+# print('Cost with nu = 4, nm = 5, nf = 3 is %0.2f.' %cofiCostFunc(flattenParams(X,Theta),Y,R,nu,nm,nf))
 
-print('Cost with nu = 4, nm = 5, nf = 3 is %0.2f.' %cofiCostFunc(flattenParams(X,Theta),Y,R,nu,nm,nf, myLamda=1.5))
+# print('Cost with nu = 4, nm = 5, nf = 3 is %0.2f.' %cofiCostFunc(flattenParams(X,Theta),Y,R,nu,nm,nf, myLambda=1.5))
+
+# Remember: use the exact same input arguments for gradient function
+# as for the cost function (the off-the-shelf minimizer requires this)
+def cofiGrad(myParams, myY, myR, myNU, myNM, myNF, myLambda=0.):
+
+    # Unfold the X and Theta matrices from the flattened params
+    myX, myTheta = reshapeParams(myParams, myNM, myNU, myNF)
+
+    # First the X gradient term 
+    # First dot theta and X together such that you get a matrix the same shape as Y
+    term1 = myX.dot(myTheta.T)
+
+    # Then multiply this term by myR to remove any components from movies that
+    # weren't rated by that user
+    term1 = np.multiply(term1, myR)
+
+    # Now subtract the y matrix (which already has 0 for nonrated movies)
+    term1 -= myY
+
+    # Lastly dot this with Theta such that the resulting matrix has the
+    # same shape as the X matrix
+    XGrad = term1.dot(myTheta)
+
+    # Now the Theta gradient term (reusing the "term1" variable)
+    ThetaGrad = term1.T.dot(myX)
+
+    # Regularization stuff
+    XGrad += myLambda*myX
+    ThetaGrad += myLambda*myTheta
+
+    return flattenParams(XGrad, ThetaGrad)
+
+def checkGradient(myParams, myY, myR, myNU, myNM, myNF, myLambda=0.):
+    print('Numerical Gradient \t cofiGrad \t\t Difference')
+
+    # Compute a numerical gradient with an epsilon perturbation vector
+    myEps = 0.0001
+    nParams = len(myParams)
+    epsVec = np.zeros(nParams)
+    # These are my implemented gradient solutions
+    myGrads = cofiGrad(myParams, myY, myR, myNU, myNM, myNF, myLambda)
+
+    # Choose 10 random elements of my combined (X, Theta) param vector
+    # and compute the numerical gradient for each... print to screen
+    # the numerical gradient next to the my cofiGradient to inspect
+
+    for i in range(10):
+        idx = np.random.randint(0, nParams)
+        epsVec[idx] = myEps
+        loss1 = cofiCostFunc(myParams - epsVec, myY, myR, myNU, myNM, myNF, myLambda)
+        loss2 = cofiCostFunc(myParams + epsVec, myY, myR, myNU, myNM, myNF, myLambda)
+        myGrad = (loss2 - loss1) / (2*myEps)
+        epsVec[idx] = 0
+        print('%0.15f \t %0.15f \t %0.15f' % (myGrad, myGrads[idx],myGrad - myGrads[idx]))
+
+# print("Checking gradient with lambda = 0...",checkGradient(flattenParams(X,Theta),Y,R,nu,nm,nf))
+
+# print("Checking gradient with lambda = 0...",checkGradient(flattenParams(X,Theta),Y,R,nu,nm,nf, myLambda=1.5))
+
+# rate some movies
+my_ratings = np.zeros((1682,1))
+my_ratings[0]   = 4
+my_ratings[97]  = 2
+my_ratings[6]   = 3
+my_ratings[11]  = 5
+my_ratings[53]  = 4
+my_ratings[63]  = 5
+my_ratings[65]  = 3
+my_ratings[68]  = 5
+my_ratings[182] = 4
+my_ratings[225] = 5
+my_ratings[354] = 5
+
+Y = ex8_movies['Y']
+R = ex8_movies['R']
+
+nf = 10
+
+# Add ratings to the Y matrix, and the relevant row to the R matrix
+myR_row = my_ratings > 0
+Y = np.hstack((Y, my_ratings))
+R = np.hstack((R, myR_row))
+np, nu = Y.shape
