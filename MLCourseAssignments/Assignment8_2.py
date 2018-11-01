@@ -18,9 +18,9 @@ gettrace = getattr(sys, 'gettrace', None)
 
 if (gettrace()):
     print('In debug Mode!')
-    ex8moviesPath = 'D:\Workspaces\GIT\py-play\MLCourseAssignments\DataAssignment8\ex8_movies.mat'
-    ex8movieParamsPath = 'D:\Workspaces\GIT\py-play\MLCourseAssignments\DataAssignment8\ex8_movieParams.mat'
-    movie_idsPath = 'D:\Workspaces\GIT\py-play\MLCourseAssignments\DataAssignment8\movie_ids.txt'
+    ex8moviesPath = 'D:\workspace\sideprojects\python-playground\MLCourseAssignments\DataAssignment8\ex8_movies.mat'
+    ex8movieParamsPath = 'D:\workspace\sideprojects\python-playground\MLCourseAssignments\DataAssignment8\ex8_movieParams.mat'
+    movie_idsPath = 'D:\workspace\sideprojects\python-playground\MLCourseAssignments\DataAssignment8\movie_ids.txt'
 
 ex8_movies = io.loadmat(ex8moviesPath)
 Y = ex8_movies['Y']
@@ -200,11 +200,60 @@ my_ratings[354] = 5
 
 Y = ex8_movies['Y']
 R = ex8_movies['R']
-
+# Use 10 features
 nf = 10
 
 # Add ratings to the Y matrix, and the relevant row to the R matrix
 myR_row = my_ratings > 0
 Y = np.hstack((Y, my_ratings))
 R = np.hstack((R, myR_row))
-np, nu = Y.shape
+nm, nu = Y.shape
+
+def normalizeRatings(myY, myR):
+    """
+    Preprocess data by subtracting mean rating for every movie (every row)
+    This is important because without this, a user who hasn't rated any movies
+    will have a predicted score of 0 for every movie, when in reality
+    they should have a predicted score of [average score of that movie].
+    """
+    # The mean is only counting movies that were rated
+    Ymean = np.sum(myY, axis=1)/np.sum(myR, axis=1)
+    Ymean = Ymean.reshape((Ymean.shape[0],1))
+
+    return myY - Ymean, Ymean
+
+Ynorm, Ymean = normalizeRatings(Y, R)
+
+# Generate random initial parameters, Theta and X
+X = np.random.rand(nm, nf)
+Theta = np.random.rand(nu, nf)
+myFlat = flattenParams(X, Theta)
+
+# Regularization parameter of 10 is used (as used in the homework assignment)
+myLambda = 10.
+
+result = scipy.optimize.fmin_cg(cofiCostFunc, x0=myFlat, fprime=cofiGrad,
+                                args=(Y,R,nu,nm,nf,myLambda),
+                                maxiter=50, disp=True, full_output=True)
+
+resX, resTheta = reshapeParams(result[0], nm, nu, nf)
+# After training the model, now make recommendations by computing
+# the predictions matrix
+prediction_matrix = resX.dot(resTheta.T)
+
+# Grab the last user's predictions (since I put my predictions at the
+# end of the Y matrix, not the front)
+# Add back in the mean movie ratings
+my_predictions = prediction_matrix[:,-1] + Ymean.flatten()
+
+pred_idxs_sorted = np.argsort(my_predictions)
+pred_idxs_sorted[:] = pred_idxs_sorted[::-1]
+
+print('Top recommendations for you: ')
+for i in range(20):
+    print('Predicting rating %0.1f for movie %s'%(my_predictions[pred_idxs_sorted[i]], movies[pred_idxs_sorted[i]]))
+
+print('\nOriginal ratings provied: ')
+for i in range(len(my_ratings)):
+    if (my_ratings[i] > 0):
+        print('Rated %d for movie %s'%(my_ratings[i], movies[i]))
