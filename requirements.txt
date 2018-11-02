@@ -11,3 +11,4 @@ h5py
 curses
 nltk
 imageio
+dlib
