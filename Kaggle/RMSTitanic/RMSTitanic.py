@@ -22,6 +22,7 @@ from sklearn.tree import DecisionTreeClassifier
 from sklearn.neighbors import KNeighborsClassifier
 from sklearn.svm import SVC, LinearSVC
 from sklearn.naive_bayes import GaussianNB
+from sklearn.model_selection import GridSearchCV, cross_val_score
 
 #----------------DATA INFO----------------
 """
@@ -294,10 +295,167 @@ Y_train = train_df["Survived"]
 X_test  = test_df.drop("PassengerId", axis=1).copy()
 
 # Stochastic gradient descent (SGD) learning
-sgd = linear_model.SGDClassifier(max_iter=50, tol=None)
-sgd.fit(X_train, Y_train)
-Y_pred = sgd.predict(X_test)
+# sgd = linear_model.SGDClassifier(max_iter=100, tol=None)
+# sgd.fit(X_train, Y_train)
+# Y_pred = sgd.predict(X_test)
 
-acc_sgd = round(sgd.score(X_train, Y_train) * 100 ,2)
+# acc_sgd = round(sgd.score(X_train, Y_train) * 100 ,2)
 
-print(round(acc_sgd, 2), '%')
+# print(round(acc_sgd, 2), '%')
+
+# Random forest
+# random_forest = RandomForestClassifier(n_estimators=100)
+# random_forest.fit(X_train, Y_train)
+# Y_pred = random_forest.predict(X_test)
+
+# acc_random_forest = round(random_forest.score(X_train, Y_train) * 100 ,2)
+
+# print(round(acc_random_forest, 2), '%')
+
+# Logistic Regression
+# log_reg = LogisticRegression()
+# log_reg.fit(X_train, Y_train)
+# Y_pred = log_reg.predict(X_test)
+
+# acc_log_reg = round(log_reg.score(X_train, Y_train) * 100, 2)
+
+# print(acc_log_reg, '%')
+
+# KNN
+# knn = KNeighborsClassifier(n_neighbors=3)
+# knn.fit(X_train, Y_train)
+
+# acc_knn = round(knn.score(X_train, Y_train) * 100, 2)
+
+# print(acc_knn, '%')
+
+# Gaussian Naive Bayes
+# gau_nb = GaussianNB()
+# gau_nb.fit(X_train, Y_train)
+
+# acc_gau_nb = round(gau_nb.score(X_train, Y_train) * 100, 2)
+
+# print(acc_gau_nb, '%')
+
+# Perceptron
+# perc = Perceptron(max_iter=50)
+# perc.fit(X_train, Y_train)
+
+# acc_perc = round(perc.score(X_train, Y_train) * 100, 2)
+
+# print(acc_perc, '%')
+
+# Linear SVC
+# linear_SVC = LinearSVC()
+# linear_SVC.fit(X_train, Y_train)
+
+# acc_linear_SVC = round(linear_SVC.score(X_train, Y_train) * 100, 2)
+
+# print(acc_linear_SVC, '%')
+
+# Decision tree
+# dec_tree = DecisionTreeClassifier()
+# dec_tree.fit(X_train, Y_train)
+
+# acc_dec_tree = round(dec_tree.score(X_train, Y_train) * 100, 2)
+
+# print(acc_dec_tree, '%')
+
+# results = pd.DataFrame({
+#     'Models': [
+#         'Support Vector Machines', 'KNN', 'Logistic Regression', 
+#         'Random Forest', 'Naive Bayes', 'Perceptron', 
+#         'Stochastic Gradient Decent', 
+#         'Decision Tree'
+#     ],
+#     'Score': [
+#         acc_linear_SVC, acc_knn, acc_log_reg,
+#         acc_random_forest, acc_gau_nb, acc_perc,
+#         acc_sgd, acc_dec_tree
+#     ]
+# })
+
+# result_df = results.sort_values(by='Score', ascending=False)
+# result_df = result_df.set_index('Models')
+# print(result_df)
+# As we can see, the Random Forest classifier goes on the first place. But first, let us check, how random-forest performs, when we use cross validation.
+
+# Choose Random Forest algorithm
+
+#----------------- FEATURE IMPORTANCE -----------------
+# score_random_forest = cross_val_score(random_forest, X_train, Y_train, cv=10, scoring='accuracy')
+
+# print('Score: ',score_random_forest)
+# print('Mean: ',score_random_forest.mean())
+# print('Standard Deviation: ',score_random_forest.std())
+
+# importances = pd.DataFrame({
+#     'Features': X_train.columns,
+#     'Importance': np.round(random_forest.feature_importances_,3)
+# })
+# importances = importances.sort_values('Importance', ascending=False).set_index('Features')
+
+# print(importances)
+
+# importances.plot.bar()
+# plt.show()
+"""
+not_alone and Parch doesn't play a significant role in our random forest classifiers prediction process. 
+Because of that I will drop them from the dataset and train the classifier again. 
+We could also remove more or less features, but this would need a more detailed investigation of the features effect on our model. 
+But I think it's just fine to remove only Alone and Parch.
+"""
+
+train_df = train_df.drop('not_alone', axis=1)
+test_df = test_df.drop('not_alone', axis=1)
+
+train_df = train_df.drop('Parch', axis=1)
+test_df = test_df.drop('Parch', axis=1)
+
+X_train = train_df.drop("Survived", axis=1)
+Y_train = train_df["Survived"]
+X_test  = test_df.drop("PassengerId", axis=1).copy()
+
+# Training Random Forest again
+# random_forest = RandomForestClassifier(n_estimators=100, oob_score=True)
+# random_forest.fit(X_train, Y_train)
+
+# acc_random_forest = round(random_forest.score(X_train, Y_train) * 100, 2)
+# print(acc_random_forest, '%')
+
+# print('oob score:', round(random_forest.oob_score_, 4)*100, '%')
+
+#----------------- HYPERPARAMETER TUNING -----------------
+"""
+Hyperparamter tuning for the parameters criterion, min_samples_leaf, min_samples_split and n_estimators.
+"""
+# param_grid = { 
+#     "criterion" : ["gini", "entropy"],
+#     "min_samples_leaf" : [1, 5, 10, 25, 50, 70],
+#     "min_samples_split" : [2, 4, 10, 12, 16, 18, 25, 35],
+#     "n_estimators": [100, 400, 700, 1000, 1500]
+# }
+
+# random_forest = RandomForestClassifier(n_estimators=100,max_features='auto', oob_score=True, random_state=1, n_jobs=-1)
+# clf = GridSearchCV(estimator=random_forest, param_grid=param_grid, n_jobs=-1)
+# clf.fit(X_train, Y_train)
+
+# print(clf.best_params)
+
+# Re-run random forest after getting new params from Hyperparameter tuning
+random_forest = RandomForestClassifier(
+    criterion='gini',
+    min_samples_leaf=1,
+    min_samples_split=10,
+    n_estimators=100,
+    max_features='auto',
+    oob_score=True,
+    random_state=1,
+    n_jobs=-1
+)
+
+random_forest.fit(X_train, Y_train)
+
+random_forest.score(X_train, Y_train)
+
+print('oob Score: ', round(random_forest.oob_score_, 4)*100, '%')
