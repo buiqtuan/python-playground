@@ -123,11 +123,20 @@ import itertools
 
 # print(sum([i for i in a if i == 1]))
 
-a = np.array([0,1,2,3,4])
+# a = np.array([0,1,2,3,4])
 
-print(a[::-1])
+# print(a[::-1])
 
 # x = np.arange(9).reshape((3,3))
 # b = np.array([1,1,3])
 
 # print(np.linalg.det(np.diag(b)))
+
+a = np.array([-1,2,3])
+b = [1,2,4,5,1]
+
+# print(a+b)
+
+c = [1 if i> 1 else 0 for i in b]
+
+print(str(c))
