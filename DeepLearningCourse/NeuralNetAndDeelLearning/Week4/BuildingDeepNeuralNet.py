@@ -129,14 +129,74 @@ def linear_activation_forward(A_prev, W, b, activation):
     elif activation == 'relu':
         A, activation_cache = relu(Z)
 
-    assert(A.shape == (W.shape[0], W.shape[1]))
+    assert(A.shape == (W.shape[0], A_prev.shape[1]))
     cache = (linear_cache, activation_cache)
 
     return A, cache
 
 
-A_prev, W, b = linear_activation_forward_test_case()
-A, linear_activation_cache = linear_activation_forward(A_prev, W, b, activation = "sigmoid")
-print("With sigmoid: A = " + str(A))
-A, linear_activation_cache = linear_activation_forward(A_prev, W, b, activation = "relu")
-print("With ReLU: A = " + str(A))
+# A_prev, W, b = linear_activation_forward_test_case()
+# A, linear_activation_cache = linear_activation_forward(A_prev, W, b, activation = "sigmoid")
+# print("With sigmoid: A = " + str(A))
+# A, linear_activation_cache = linear_activation_forward(A_prev, W, b, activation = "relu")
+# print("With ReLU: A = " + str(A))
+
+def L_model_forward(X, parameter):
+    """
+    Implement forward propagation for the [LINEAR->RELU]*(L-1)->LINEAR->SIGMOID computation
+    
+    Arguments:
+    X -- data, numpy array of shape (input size, number of examples)
+    parameters -- output of initialize_parameters_deep()
+    
+    Returns:
+    AL -- last post-activation value
+    caches -- list of caches containing:
+                every cache of linear_activation_forward() (there are L-1 of them, indexed from 0 to L-1)
+    """
+    caches = []
+    A = X
+    L = len(parameter) // 2 # number of layers in the neural network
+
+    # Implement [LINEAR -> RELU]*(L-1). Add "cache" to the "caches" list.
+    for l in range(1, L):
+        A_prev = A
+        A, cache = linear_activation_forward(A_prev, parameter['W' + str(l)], parameter['b' + str(l)], 'relu')
+        caches.append(cache)
+
+    # Implement LINEAR -> SIGMOID. Add "cache" to the "caches" list.
+    AL, cache = linear_activation_forward(A, parameter['W' + str(L)], parameter['b' + str(L)], 'sigmoid')
+    caches.append(cache)
+
+    assert(AL.shape == (1, X.shape[1]))
+
+    return AL, caches
+
+
+# X, parameters = L_model_forward_test_case_2hidden()
+# AL, caches = L_model_forward(X, parameters)
+# print("AL = " + str(AL))
+# print("Length of caches list = " + str(len(caches)))
+
+def compute_cost(AL, Y):
+    """
+    Implement the cost function defined by equation (7).
+​
+    Arguments:
+    AL -- probability vector corresponding to your label predictions, shape (1, number of examples)
+    Y -- true "label" vector (for example: containing 0 if non-cat, 1 if cat), shape (1, number of examples)
+​
+    Returns:
+    cost -- cross-entropy cost
+    """
+    m = Y.shape[1]
+    # Compute loss from aL and y.
+    cost = (-1./m)*(np.dot(Y, np.log(AL).T + np.dot(1 - Y, np.log(1 - AL).T)))
+
+    cost = np.squeeze(cost)
+    assert(cost.shape == ())
+
+    return cost
+
+Y, AL = compute_cost_test_case()
+print("cost = " + str(compute_cost(AL, Y)))
