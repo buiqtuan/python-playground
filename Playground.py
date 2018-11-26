@@ -132,11 +132,15 @@ import itertools
 
 # print(np.linalg.det(np.diag(b)))
 
-a = np.array([-1,2,3])
-b = [1,2,4,5,1]
+# a = np.array([-1,2,3])
+# b = [1,2,4,5,1]
 
 # print(a+b)
 
-c = [1 if i> 1 else 0 for i in b]
+# c = [1 if i> 1 else 0 for i in b]
 
-print(str(c))
+# print(str(c))
+
+D1 = np.random.choice([0, 1], size=(2,2),p=[0.5,0.5])
+
+print(D1)
