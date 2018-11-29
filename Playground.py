@@ -1,5 +1,6 @@
 import numpy as np
 import itertools
+np.random.seed(3)
 
 # x = [1,2,3,4,5,6,7,8,9]
 
@@ -141,6 +142,14 @@ import itertools
 
 # print(str(c))
 
-D1 = np.random.choice([0, 1], size=(2,2),p=[0.5,0.5])
+# D1 = np.random.choice([0, 1], size=(2,2),p=[0.5,0.5])
 
-print(D1)
+# print(D1)
+
+a = np.array([[0,1,2,3]])
+
+m = list(np.random.permutation(4))
+
+print(m)
+
+print(a[:, m])
