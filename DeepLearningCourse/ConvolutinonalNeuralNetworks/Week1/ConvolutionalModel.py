@@ -180,7 +180,7 @@ def pool_forward(A_prev, hparameters, mode='max'):
                     horiz_start = w
                     horiz_end = w + f
 
-                    a_prev_slice = A_prev[i][vert_start:vert_end][horiz_start:horiz_end][c]
+                    a_prev_slice = A_prev[i, vert_start:vert_end, horiz_start:horiz_end, c]
 
                     if mode == 'max':
                         A[i, h, w, c] = np.max(a_prev_slice)
@@ -290,7 +290,7 @@ def create_mask_from_window(x):
     """
     k = np.max(x)
 
-    mask = np.array([[False if (i < k) else True for i in j] for j in x])
+    mask = np.array([[0 if (i < k) else 1 for i in j] for j in x])
 
     return mask
 
@@ -322,3 +322,73 @@ def distribute_value(dz, shape):
 
 # a = distribute_value(2, (2,2))
 # print('distributed value =', a)
+
+def pool_backward(dA, cache, mode='max'):
+    """
+    Implements the backward pass of the pooling layer
+    
+    Arguments:
+    dA -- gradient of cost with respect to the output of the pooling layer, same shape as A
+    cache -- cache output from the forward pass of the pooling layer, contains the layer's input and hparameters 
+    mode -- the pooling mode you would like to use, defined as a string ("max" or "average")
+    
+    Returns:
+    dA_prev -- gradient of cost with respect to the input of the pooling layer, same shape as A_prev
+    """
+
+    # Retrieve information from cache
+    (A_prev, hparameters) = cache
+
+    # Retriev hyperparameters from 'hparamters'
+    stride = hparameters['stride']
+    f = hparameters['f']
+
+    # Retrieve demensions from A_prev's shape and dA's shape
+    m, n_H_prev, n_W_prev, n_C_prev = A_prev.shape
+    m, n_H, n_W, n_C = dA.shape
+
+    # Initialize dA_prev with zeros
+    dA_prev = np.zeros(A_prev.shape)
+
+    for i in range(m):
+        a_prev = A_prev[i]
+        for h in range(n_H):
+            for w in range(n_W):
+                for c in range(n_C):
+                    vert_start = h
+                    vert_end = h + f
+                    horiz_start = w
+                    horiz_end = w + f
+
+                    if mode == 'max':
+                        a_prev_slice = a_prev[vert_start:vert_end, horiz_start:horiz_end,c]
+
+                        mask = create_mask_from_window(a_prev_slice)
+
+                        dA_prev[i, vert_start:vert_end, horiz_start:horiz_end, c] += np.multiply(dA[i, vert_start: vert_end, horiz_start: horiz_end, c], mask)
+                    elif mode == 'average':
+                        da = np.sum(dA[i, vert_start:vert_end, horiz_start:horiz_end, c])
+
+                        shape = (f, f)
+
+                        dA_prev[i, vert_start:vert_end, horiz_start:horiz_end, c] += distribute_value(da, shape)
+
+    assert(dA_prev.shape == A_prev.shape)
+
+    return dA_prev
+
+
+np.random.seed(1)
+A_prev = np.random.randn(5, 5, 3, 2)
+hparameters = {"stride" : 1, "f": 2}
+A, cache = pool_forward(A_prev, hparameters)
+dA = np.random.randn(5, 4, 2, 2)
+dA_prev = pool_backward(dA, cache, mode = "max")
+print("mode = max")
+print('mean of dA = ', np.mean(dA))
+print('dA_prev[1,1] = ', dA_prev[1,1])  
+print()
+dA_prev = pool_backward(dA, cache, mode = "average")
+print("mode = average")
+print('mean of dA = ', np.mean(dA))
+print('dA_prev[1,1] = ', dA_prev[1,1])
