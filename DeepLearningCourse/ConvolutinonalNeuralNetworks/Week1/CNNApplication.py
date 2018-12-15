@@ -104,27 +104,151 @@ def forward_propagation(X, parameters):
 
     A1 = tf.nn.relu(Z1)
 
-    P1 = tf.nn.max_pool(A1, ksize=(8, 8, 8, 8), strides=[8, 8, 8, 8], padding='SAME')
+    P1 = tf.nn.max_pool(A1, ksize=(1, 8, 8, 1), strides=[1, 8, 8, 1], padding='SAME')
 
     Z2 = tf.nn.conv2d(P1, W2, strides=[1, 1, 1, 1], padding='SAME')
 
     A2 = tf.nn.relu(Z2)
 
-    P2 = tf.nn.max_pool(A2, ksize=(4, 4, 4, 4), strides=[4, 4, 4, 4], padding='SAME')
+    P2 = tf.nn.max_pool(A2, ksize=(1, 4, 4, 1), strides=[1, 4, 4, 1], padding='SAME')
 
-    P2 = [item for sublist in l for item in sublist]
+    # Flatten the tensor
+    P2 = tf.contrib.layers.flatten(P2)
 
     Z3 = tf.contrib.layers.fully_connected(P2, num_outputs=6, activation_fn=None)
 
     return Z3
 
-tf.reset_default_graph()
-with tf.Session() as sess:
-    np.random.seed(1)
-    X, Y = create_placeholders(64, 64, 3, 6)
+# tf.reset_default_graph()
+# with tf.Session() as sess:
+#     np.random.seed(1)
+#     X, Y = create_placeholders(64, 64, 3, 6)
+#     parameters = initialize_parameters()
+#     Z3 = forward_propagation(X, parameters)
+#     init = tf.global_variables_initializer()
+#     sess.run(init)
+#     a = sess.run(Z3, {X: np.random.randn(2,64,64,3), Y: np.random.randn(2,6)})
+#     print("Z3 = " + str(a))
+
+def compute_cost(Z3, Y):
+    """
+    Computes the cost
+    
+    Arguments:
+    Z3 -- output of forward propagation (output of the last LINEAR unit), of shape (6, number of examples)
+    Y -- "true" labels vector placeholder, same shape as Z3
+    
+    Returns:
+    cost - Tensor of the cost function
+    """
+
+    cost = tf.reduce_mean(tf.nn.softmax_cross_entropy_with_logits(logits=Z3, labels=Y))
+
+    return cost
+
+# tf.reset_default_graph()
+# with tf.Session() as sess:
+#     np.random.seed(1)
+#     X, Y = create_placeholders(64, 64, 3, 6)
+#     parameters = initialize_parameters()
+#     Z3 = forward_propagation(X, parameters)
+#     cost = compute_cost(Z3, Y)
+#     init = tf.global_variables_initializer()
+#     sess.run(init)
+#     a = sess.run(cost, {X: np.random.randn(4,64,64,3), Y: np.random.randn(4,6)})
+#     print("cost = " + str(a))
+
+def model(X_train, Y_train, X_test, Y_test, learning_rate=.009, num_epochs=100, minibatch_size=64, print_cost=True):
+    """
+    Implements a three-layer ConvNet in Tensorflow:
+    CONV2D -> RELU -> MAXPOOL -> CONV2D -> RELU -> MAXPOOL -> FLATTEN -> FULLYCONNECTED
+    
+    Arguments:
+    X_train -- training set, of shape (None, 64, 64, 3)
+    Y_train -- test set, of shape (None, n_y = 6)
+    X_test -- training set, of shape (None, 64, 64, 3)
+    Y_test -- test set, of shape (None, n_y = 6)
+    learning_rate -- learning rate of the optimization
+    num_epochs -- number of epochs of the optimization loop
+    minibatch_size -- size of a minibatch
+    print_cost -- True to print the cost every 100 epochs
+    
+    Returns:
+    train_accuracy -- real number, accuracy on the train set (X_train)
+    test_accuracy -- real number, testing accuracy on the test set (X_test)
+    parameters -- parameters learnt by the model. They can then be used to predict.
+    """
+
+    # To be able to rerun the model without overfitting tf variables
+    ops.reset_default_graph()
+    # To keep results consistent (tf seed)
+    tf.set_random_seed(1)
+    # To keep results consistent (numpy seed)
+    seed = 3
+    (m, n_H0, n_W0, n_C0) = X_train.shape
+    n_Y = Y_train.shape[1]
+    costs = []
+
+    # Create placeholders of the correct shape
+    X, Y = create_placeholders(n_H0, n_W0, n_C0, n_Y)
+
+    # Initialize parameters
     parameters = initialize_parameters()
+
+    # Forward propagation: Build the forward propagation in the tf grahp
     Z3 = forward_propagation(X, parameters)
+
+    # Add cost function to tf graph
+    cost = compute_cost(Z3, Y)
+
+    # Define the tf optimizer. Use an Adamoptimizer that minimizes the cost
+    optimizer = tf.train.AdamOptimizer(learning_rate).minimize(cost)
+
+    # Init all the variables globally
     init = tf.global_variables_initializer()
-    sess.run(init)
-    a = sess.run(Z3, {X: np.random.randn(2,64,64,3), Y: np.random.randn(2,6)})
-    print("Z3 = " + str(a))
+
+    with tf.Session() as sess:
+        sess.run(init)
+
+        for epoch in range(num_epochs):
+            minibatch_cost = 0.
+            num_minibatches = int(m / minibatch_size)
+            seed += 1
+            minibatches = random_mini_batches(X_train, Y_train, minibatch_size, seed)
+
+            for minibatch in minibatches:
+                # Select a mini batch
+                (minibatch_X, minibatch_Y) = minibatch
+
+                _, temp_cost = sess.run([optimizer, cost], feed_dict={X: minibatch_X, Y: minibatch_Y})
+
+                minibatch_cost += temp_cost / num_minibatches
+            
+            # Print the cost every epoch
+            if print_cost == True and epoch % 5 == 0:
+                print ("Cost after epoch %i: %f" % (epoch, minibatch_cost))
+            if print_cost == True and epoch % 1 == 0:
+                costs.append(minibatch_cost)
+
+        # plot the cost
+        plt.plot(np.squeeze(costs))
+        plt.ylabel('cost')
+        plt.xlabel('iterations (per tens)')
+        plt.title("Learning rate =" + str(learning_rate))
+        plt.show()
+
+        # Calculate the correct predictions
+        predict_op = tf.argmax(Z3, 1)
+        correct_prediction = tf.equal(predict_op, tf.argmax(Y, 1))
+            
+        # Calculate accuracy on the test set
+        accuracy = tf.reduce_mean(tf.cast(correct_prediction, "float"))
+        print(accuracy)
+        train_accuracy = accuracy.eval({X: X_train, Y: Y_train})
+        test_accuracy = accuracy.eval({X: X_test, Y: Y_test})
+        print("Train Accuracy:", train_accuracy)
+        print("Test Accuracy:", test_accuracy)
+
+    return train_accuracy, test_accuracy, parameters 
+
+_, _, parameters = model(X_train, Y_train, X_test, Y_test)
