@@ -12,3 +12,6 @@ curses
 nltk
 imageio
 dlib
+keras
+pydot
+IPython
